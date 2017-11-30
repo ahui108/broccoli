@@ -6,6 +6,7 @@ then
 elif [ "$1" = "de" ]
 then
     logutil.bin.x86 -decrypt -inkey arm.ky -in ARMLog.INFO.tar.bz2 -out ARMLog.tbz
+    [ -d ARMLOG  ] && rm -rf ARMLOG
     mkdir ARMLOG
     tar xvf ARMLog.tbz -C ./ARMLOG
     logutil.bin.x86 -decrypt -inkey armdg.ky -in ARMLOG/diags.log -out ARMLOG/diags.tbz
