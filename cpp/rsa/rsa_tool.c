@@ -148,9 +148,9 @@ int main(int argc, char **argv) {
         if (file_in != NULL) {
             int count = fread(source, 1, encrypt_len, file_in);
             if (count != encrypt_len) {
-                info("read input file failed\n");
+                info("read input file failed.\n");
             } else {
-                debug("read input succeed\n");
+                debug("read input succeed.\n");
                 if (ACTION_TYPE_ENCRYPT == action_type) {
                     info("encrypting... ");
                     ptr_en = encrypt(source, key_file);
@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
                 if (file_out != NULL) {
                     count = fwrite(ptr_en, 1, encrypt_len, file_out);
                     if (count != encrypt_len) {
-                        info("write output file failed\n");
+                        info("write output file failed.\n");
                     }
                     
                     if (ptr_en != NULL) {
@@ -182,13 +182,13 @@ int main(int argc, char **argv) {
                             encrypt_len = count;
                             count = fwrite(source, 1, encrypt_len, file_out);
                             if (count != encrypt_len) {
-                                info("failed");
+                                info("failed!");
                                 break;
                             }
                         }
                     } while(count == encrypt_len);
                 }
-                info("done\n");
+                info("done.\n");
                 
                 sprintf(msg_verbose, "count=%d, encrypt_len=%d\n", count, encrypt_len);
                 debug(msg_verbose);
