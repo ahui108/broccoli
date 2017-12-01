@@ -1,0 +1,27 @@
+Log file created at: 1970/01/01 00:00:11
+Running on machine: iRaychina
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I0101 00:00:11.849656   632      ck_start.cpp: 135] app v1.3.8.26
+I0101 00:00:17.047164   632       iray_sync.c:  20] STATE_UP success
+I0101 00:00:17.047646   632     iray_timer2.c: 496] STATE_UP success
+I0101 00:00:17.047802   632        iray_eim.c: 262] STATE_UP success
+I0101 00:00:17.047985   632       ck_adpt.cpp:  95] STATE_UP success
+I0101 00:00:17.048159   632        ck_dpo.cpp: 373] STATE_UP success
+I0101 00:00:17.048331   632      ck_ghost.cpp: 395] STATE_UP success
+I0101 00:00:17.048501   632      ck_proto.cpp: 543] STATE_UP success
+I0101 00:00:17.049123   632        ck_tty.cpp: 329] STATE_UP success
+I0101 00:00:17.049792   736        ck_tty.cpp:  73] enter tty_polling_routine_fpga
+I0101 00:00:17.049813   737        ck_tty.cpp:  99] enter tty_polling_routine_mcu
+I0101 00:00:17.258545   632     ck_switch.cpp: 118] netlink status: wired down and wireless up
+I0101 00:00:17.259581   746    ck_monitor.cpp: 164] enter ck_monitor_routine
+I0101 00:00:17.259824   632    ck_monitor.cpp: 242] STATE_UP success
+I0101 00:00:17.260034   632        ck_arm.cpp: 864] STATE_UP success
+I0101 00:00:17.260196   632        ck_fpd.cpp:2172] STATE_UP success
+I0101 00:00:17.260365   632        ck_mcu.cpp: 309] STATE_UP success
+I0101 00:00:17.261101   750    ck_udp_cmd.cpp: 114] enter net_udp_cmd_routine
+I0101 00:00:17.261523   751 ck_tcp_server.cpp: 154] enter net_tcp_server_routine
+I0101 00:00:17.261807   751 ck_tcp_server.cpp:  64] create net_ctx.tcp_server_socket [14]
+I0101 00:00:17.261883   752  ck_send_data.cpp: 350] enter net_send_data_routine
+I0101 00:00:17.261917   750    ck_udp_cmd.cpp: 130] create net_ctx.udp_socket [15]
+I0101 00:00:17.261820   632        ck_net.cpp: 381] STATE_UP success
+I0101 00:00:17.262408   632        ck_ftp.cpp: 747] STATE_UP success

@@ -1,0 +1,6 @@
+F:\test\broccoli\cpp\rsa_cs\logutil\logutil\bin\Debug\logutil.exe.config
+F:\test\broccoli\cpp\rsa_cs\logutil\logutil\bin\Debug\logutil.exe
+F:\test\broccoli\cpp\rsa_cs\logutil\logutil\bin\Debug\logutil.pdb
+F:\test\broccoli\cpp\rsa_cs\logutil\logutil\obj\Debug\logutil.csprojResolveAssemblyReference.cache
+F:\test\broccoli\cpp\rsa_cs\logutil\logutil\obj\Debug\logutil.exe
+F:\test\broccoli\cpp\rsa_cs\logutil\logutil\obj\Debug\logutil.pdb
