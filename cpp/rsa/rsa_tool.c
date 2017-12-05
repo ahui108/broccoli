@@ -110,11 +110,11 @@ void parse_args(int argc, char **argv, int *action)
     int valid_args = 0;
     if (ACTION_TYPE_ENCRYPT == type || ACTION_TYPE_DECRYPT == type) {
         if (!strlen(key_file)) {
-            info("Key file is needed");
+            info("Key file is required.\n");
         } else if (!strlen(infile)) {
-            info("Input file is needed");
+            info("Input file is required.\n");
         } else if (!strlen(outfile)) {
-            info("Output file is needed");
+            info("Output file is required.\n");
         } else {
             valid_args = 1;
         }

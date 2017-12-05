@@ -13,7 +13,7 @@ then
     mkdir -p ARMLOG/diags_log
     tar xvf ARMLOG/diags.tbz -C ./ARMLOG/diags_log
 
-    rm ARMLog.tbz
+    #rm ARMLog.tbz
     rm ARMLOG/diags.log
     rm ARMLOG/diags.tbz
 fi
