@@ -19,65 +19,114 @@ namespace logutil
 
         private void Help()
         {
-            string msg = @"Usage: logutil.bin [OPTION]\n
-Encrypt or decrypt file with rsa key pair.\n
-\n
-Valid options are:\n
--help,--help    Display this summary\n
--decrypt        Decrypt with key file\n
--inkey keyfile  Input key file\n
--in infile      Input file\n
--out outfile    Output file\n";
+            string msg = @"Usage: logutil.bin [OPTION]
+Decrypt file with rsa key pair(pem).
+
+Valid options are:
+-help,--help    Display this summary
+-decrypt        Decrypt with key file
+-inkey keyfile  Input key file
+-in infile      Input file
+-out outfile    Output file";
             Console.WriteLine(msg);
         }
 
         public void ParseArgs(string[] args)
         {
-            for (int i = 0; i < args.Length; i++)
+            if (0 == args.Length)
             {
-                if (0 == args[i].CompareTo("-decrypt"))
+                m_bShowHelp = true;
+            }
+            else
+            {
+                for (int i = 0; i < args.Length; i++)
                 {
-                    m_bDecrypt = true;
-                }
-                else if (0 == args[i].CompareTo("-inkey"))
-                {
-                    i++;
-                    m_inkey = args[i];
-                    if (!File.Exists(m_inkey))
+                    if (0 == args[i].CompareTo("-decrypt"))
                     {
-                        m_bDecrypt = false;
-                        Console.WriteLine("The key file does not exist.");
-                        break;
+                        m_bDecrypt = true;
                     }
-                }
-                else if (0 == args[i].CompareTo("-in"))
-                {
-                    i++;
-                    m_inputFile = args[i];
-                    if (!File.Exists(m_inputFile))
+                    else if (0 == args[i].CompareTo("-inkey"))
                     {
-                        m_bDecrypt = false;
-                        Console.WriteLine("The input file does not exist.");
-                        break;
+                        i++;
+                        if (i < args.Length)
+                        {
+                            m_inkey = args[i];
+                            if (!File.Exists(m_inkey))
+                            {
+                                m_bDecrypt = false;
+                                Console.WriteLine("The key file does not exist.");
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Argument for '-inkey' is required.\n");
+                            m_bShowHelp = true;
+                        }
                     }
+                    else if (0 == args[i].CompareTo("-in"))
+                    {
+                        i++;
+                        if (i < args.Length)
+                        {
+                            m_inputFile = args[i];
+                            if (!File.Exists(m_inputFile))
+                            {
+                                m_bDecrypt = false;
+                                Console.WriteLine("The input file does not exist.\n");
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Argument for '-in' is required.\n");
+                            m_bShowHelp = true;
+                        }
 
+                    }
+                    else if (0 == args[i].CompareTo("-out"))
+                    {
+                        i++;
+                        if (i < args.Length)
+                        {
+                            m_outputFile = args[i];
+                        }
+                        else 
+                        {
+                            Console.WriteLine("Argument for '-out' is required.\n");
+                            m_bShowHelp = true;
+                        }
+                    }
+                    else if (0 == args[i].CompareTo("-help") || 0 == args[i].CompareTo("--help"))
+                    {
+                        m_bShowHelp = true;
+                        break;
+                    }
                 }
-                else if (0 == args[i].CompareTo("-out"))
+            }
+
+            if (!m_bDecrypt)
+            {
+                m_bShowHelp = true;
+            }
+            else if (!m_bShowHelp)
+            {
+                if (0 == m_outputFile.Length)
                 {
-                    i++;
-                    m_outputFile = args[i];
-                }
-                else if (0 == args[i].CompareTo("-help") || 0 == args[i].CompareTo("--help"))
-                {
+                    Console.WriteLine("Output file is required.\n");
                     m_bShowHelp = true;
-                    break;
+                }
+                else if (0 == m_inputFile.Length)
+                {
+                    Console.WriteLine("Input file is required.\n");
+                    m_bShowHelp = true;
                 }
             }
 
             if (m_bShowHelp)
             {
-                m_bDecrypt = false;
                 Help();
+                m_bDecrypt = false;
             }
         }
 
@@ -206,7 +255,8 @@ Valid options are:\n
         {
             FileStream inFileStream = new FileStream(m_inputFile, FileMode.Open, FileAccess.Read);
             byte[] buffer = new byte[128];
-            inFileStream.Read(buffer, 0, 128);
+            int len = inFileStream.Read(buffer, 0, 128);
+            //Console.WriteLine("read input file length:{0}", len);
 
             byte[] decryptedData;
             string keyxml = PrivateKeyDecXml(m_inkey);
@@ -215,10 +265,74 @@ Valid options are:\n
             if (decryptedData != null)
             { 
                 FileStream outFileStream = new FileStream(m_outputFile, FileMode.Create, FileAccess.Write);
-                outFileStream.Write(decryptedData, 0, 128);
+                outFileStream.Write(decryptedData, 0, decryptedData.Length);
                 long length = inFileStream.Length;
-                inFileStream.CopyTo(outFileStream, (int)(length - 128));
+                if (length > 128)
+                {
+                    inFileStream.CopyTo(outFileStream, (int)(length - 128));
+                }
+                outFileStream.Close();
             }
+            inFileStream.Close();
+        }
+
+        public byte[] RSADecrypt(byte[] DataToDecrypt, string strKeyXML, bool DoOAEPPadding)
+        {
+            byte[] decryptedData;
+            try
+            {
+                //Create a new instance of RSACryptoServiceProvider.
+                using (RSACryptoServiceProvider RSA = new RSACryptoServiceProvider())
+                {
+                    //Import the RSA Key information. This needs to include the private key information.
+                    //RSA.ImportParameters(RSAKeyInfo);
+                    RSA.FromXmlString(strKeyXML);
+
+                    //Decrypt the passed byte array and specify OAEP padding.  
+                    //OAEP padding is only available on Microsoft Windows XP or later.  
+                    decryptedData = RSA.Decrypt(DataToDecrypt, DoOAEPPadding);
+                }
+                return decryptedData;
+            }
+            //Catch and display a CryptographicException to the console.
+            catch (CryptographicException e)
+            {
+                Console.WriteLine(e.ToString());
+
+                return null;
+            }
+        }
+
+        public byte[] RSAEncrypt(byte[] DataToEncrypt, string strKeyXML, bool DoOAEPPadding)
+        {
+            try
+            {
+                byte[] encryptedData;
+                //Create a new instance of RSACryptoServiceProvider.
+                using (RSACryptoServiceProvider RSA = new RSACryptoServiceProvider())
+                {
+
+                    //Import the RSA Key information. This only needs
+                    //toinclude the public key information.
+                    //RSA.ImportParameters(RSAKeyInfo);
+                    RSA.FromXmlString(strKeyXML);
+
+                    //Encrypt the passed byte array and specify OAEP padding.  
+                    //OAEP padding is only available on Microsoft Windows XP or
+                    //later.  
+                    encryptedData = RSA.Encrypt(DataToEncrypt, DoOAEPPadding);
+                }
+                return encryptedData;
+            }
+            //Catch and display a CryptographicException  
+            //to the console.
+            catch (CryptographicException e)
+            {
+                Console.WriteLine(e.Message);
+
+                return null;
+            }
+
         }
 
         public byte[] RSAEncrypt(byte[] DataToEncrypt, RSAParameters RSAKeyInfo, bool DoOAEPPadding)
@@ -252,33 +366,6 @@ Valid options are:\n
 
         }
 
-        public byte[] RSADecrypt(byte[] DataToDecrypt, string strKeyXML, bool DoOAEPPadding)
-        {
-            byte[] decryptedData;
-            try
-            {
-                //Create a new instance of RSACryptoServiceProvider.
-                using (RSACryptoServiceProvider RSA = new RSACryptoServiceProvider())
-                {
-                    //Import the RSA Key information. This needs to include the private key information.
-                    //RSA.ImportParameters(RSAKeyInfo);
-                    RSA.FromXmlString(strKeyXML);
-
-                    //Decrypt the passed byte array and specify OAEP padding.  
-                    //OAEP padding is only available on Microsoft Windows XP or later.  
-                    decryptedData = RSA.Decrypt(DataToDecrypt, DoOAEPPadding);
-                }
-                return decryptedData;
-            }
-            //Catch and display a CryptographicException to the console.
-            catch (CryptographicException e)
-            {
-                Console.WriteLine(e.ToString());
-
-                return null;
-            }
-        }
-
         public byte[] RSADecrypt(byte[] DataToDecrypt, RSAParameters RSAKeyInfo, bool DoOAEPPadding)
         {
             try
@@ -310,7 +397,9 @@ Valid options are:\n
             ParseArgs(args);
             if (m_bDecrypt)
             {
+                Console.Write("Decrypting... ");
                 DecryptFile();
+                Console.WriteLine("Done");
             }
         }
         static void Main(string[] args)

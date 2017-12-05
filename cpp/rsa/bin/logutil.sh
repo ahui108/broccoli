@@ -2,7 +2,7 @@
 
 if [ "$1" = "en" ]
 then
-    logutil.bin.x86 -encrypt -inkey armpub.ky -in ARMLog.tbz -out ARMLog.org 
+    logutil.bin.x86 -encrypt -inkey armpub.ky -in ARMLog.tbz -out ARMLog.en 
 elif [ "$1" = "de" ]
 then
     logutil.bin.x86 -decrypt -inkey arm.ky -in ARMLog.INFO.tar.bz2 -out ARMLog.tbz

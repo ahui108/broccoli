@@ -2,8 +2,7 @@
 
 if [ "$1" = "en" ]
 then
-    #logutil.bin.x86 -encrypt -inkey armpub.ky -in INFO -out INFO.en 
-    openssl rsautl -encrypt -keyform der -in INFO -out INFO.en -inkey armpub.der 
+    openssl rsautl -encrypt -keyform der -in INFO -out INFO.en -inkey armpub.der -pubin 
 elif [ "$1" = "de" ]
 then
 :<<!    
@@ -20,6 +19,6 @@ then
     rm ARMLOG/diags.tbz
 !
     #dd if=ARMLog.INFO.tar.bz2 of=ARMLog.h bs=128 count=1
-    openssl rsautl -decrypt -keyform der -in ARMLog.hd -out ARMLog.tbz -inkey arm.der 
+    openssl rsautl -decrypt -keyform der -in INFO.en -out INFO.org -inkey arm.der 
     
 fi
