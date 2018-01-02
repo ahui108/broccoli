@@ -1,0 +1,87 @@
+//CPU out = data - data
+13:33:06.687049 - enter main
+13:33:06.687141 - allocating...
+13:33:06.687155 - allocate done
+13:33:06.687161 - get platform ids
+13:33:06.701300 - get device ids
+13:33:06.769974 - create context
+13:33:06.770481 - creat command queue
+13:33:06.770505 - load kernel source
+13:33:06.770530 - create program with kernel source
+13:33:06.770540 - build program
+13:33:06.821950 - create buffer
+13:33:06.821992 - create kernel
+13:33:06.822004 - enter read image
+13:33:06.830801 - read done
+13:33:06.842406 - before cpu computing
+13:33:06.847930 - end computing
+=5,524us
+13:33:06.847955 - enter save image
+13:33:06.864345 - save done
+13:33:06.867940 - exit main
+
+//GPU out = data - data
+13:33:37.703226 - enter main
+13:33:37.703307 - allocating...
+13:33:37.703320 - allocate done
+13:33:37.703326 - get platform ids
+13:33:37.716721 - get device ids
+13:33:37.792562 - create context
+13:33:37.792947 - creat command queue
+13:33:37.792971 - load kernel source
+13:33:37.793003 - create program with kernel source
+13:33:37.793016 - build program
+13:33:37.851540 - create buffer
+13:33:37.851583 - create kernel
+13:33:37.851605 - enter read image
+13:33:37.858700 - read done
+13:33:37.863338 - before gpu computing
+13:33:37.881878 - end computing
+=18,540us
+13:33:37.881920 - enter save image
+13:33:37.900709 - save done
+13:33:37.903530 - exit main
+
+//CPU out = data - data + 400
+13:36:39.310368 - enter main
+13:36:39.310454 - allocating...
+13:36:39.310474 - allocate done
+13:36:39.310480 - get platform ids
+13:36:39.323993 - get device ids
+13:36:39.388185 - create context
+13:36:39.388660 - creat command queue
+13:36:39.388682 - load kernel source
+13:36:39.388718 - create program with kernel source
+13:36:39.388734 - build program
+13:36:39.446561 - create buffer
+13:36:39.446616 - create kernel
+13:36:39.446639 - enter read image
+13:36:39.454413 - read done
+13:36:39.465797 - before cpu computing
+13:36:39.522475 - end computing
+=56,678us
+13:36:39.522524 - enter save image
+13:36:39.540124 - save done
+13:36:39.543291 - exit main
+
+//GPU out = data -data + 400
+13:34:59.161235 - enter main
+13:34:59.161319 - allocating...
+13:34:59.161340 - allocate done
+13:34:59.161347 - get platform ids
+13:34:59.174648 - get device ids
+13:34:59.240051 - create context
+13:34:59.240390 - creat command queue
+13:34:59.240414 - load kernel source
+13:34:59.240459 - create program with kernel source
+13:34:59.240473 - build program
+13:34:59.295837 - create buffer
+13:34:59.295896 - create kernel
+13:34:59.295916 - enter read image
+13:34:59.303189 - read done
+13:34:59.308386 - before gpu computing
+13:34:59.327169 - end computing
+=18,783us
+13:34:59.327206 - enter save image
+13:34:59.346948 - save done
+13:34:59.350365 - exit main
