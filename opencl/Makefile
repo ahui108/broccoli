@@ -1,5 +1,5 @@
 APPNAME = helloworld
-
+APPNAME-CPU = helloworld-cpu
 #TOOLCHAIN = /opt/freescale/usr/local/gcc-4.6.2-glibc-2.13-linaro-multilib-2011.12/fsl-linaro-toolchain/ 
 #CROSS_COMPILER = $(TOOLCHAIN)/bin/arm-fsl-linux-gnueabi- 
 #ROOTFS_DIR=/your_path/ltib/rootfs
@@ -20,12 +20,19 @@ OBJECTS = $(APPNAME).o
  
 first: all 
  
-all: $(APPNAME) 
+all: $(APPNAME) $(APPNAME-CPU)
+
 $(APPNAME): $(OBJECTS)
 	$(CC) -o $(APPNAME) $(OBJECTS) $(LFLAGS)
 
 $(APPNAME).o: $(APPNAME).c
 	$(CC) $(CFLAGS) -c -o $(APPNAME).o $(APPNAME).c 
 
+$(APPNAME-CPU): $(APPNAME-CPU).o
+	$(CC) -o $(APPNAME-CPU) $(APPNAME-CPU).o
+
+$(APPNAME-CPU).o: $(APPNAME-CPU).c
+	$(CC) $(CFLAGA) -c -o $(APPNAME-CPU).o $(APPNAME-CPU).c
+
 clean:
-	$(DEL_FILE) $(APPNAME) $(OBJECTS)
+	$(DEL_FILE) $(APPNAME) $(OBJECTS) $(APPNAME-CPU) $(APPNAME-CPU).o

@@ -1,8 +1,5 @@
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <assert.h>
-#include <time.h> 
 #include <CL/cl.h> 
+#include "helloworld.h"
  
 #define FSLCL_ERROR -1 
 #define FSLCL_SUCCESS CL_SUCCESS 
@@ -14,23 +11,7 @@ struct fsl_kernel_src_str
 }; 
 
 typedef struct fsl_kernel_src_str fsl_kernel_src; 
-#define MAX_NAME_LEN 1000
-#define assert_and_return(exp, ret)\
-    do {\
-        assert(exp);\
-        if (!(exp)) {\
-            fprintf(stderr, "assert(%s) failed\n", #exp);\
-            return (ret);\
-        }\
-    } while (0)
 
-#define assert_and_log(exp)\
-    do {\
-        assert(exp);\
-        if (!(exp)) {\
-            fprintf(stderr, "assert(%s) failed\n", #exp);\
-        }\
-    } while (0)
 
 /* An error check macro for OpenCL.
  *
@@ -82,42 +63,7 @@ typedef struct fsl_kernel_src_str fsl_kernel_src;
     abort(); \
   }
   
-void debug(char *msg)
-{   
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    
-    /*
-    time_t now;
-    time(&now);
-    struct tm *timenow;
-    */
-    
-    int elapsed = 0;
-    struct tm *timenow;
-    #if 0
-    if (cycle) {
-        struct tm * time_elapsed;
-        time_elapsed = localtime(&tv.tv_sec);
-        elapsed = time_elassed.tv_usec - timenow.tv_usec;
-        timenow = time_elapsed;
-    } else {
-        timenow = localtime(&tv.tv_sec);
-    }
-    #endif
-    
-    timenow = localtime(&tv.tv_sec);
-    //printf("time_now:%d/%d/%d:%d:%d:%d.%ld\n", /*1900 + timenow->tm_year, 1 + timenow->tm_mon, timenow->tm_mday, */timenow->tm_hour, timenow->tm_min, timenow->tm_sec, tv.tv_usec); 
-    printf("%02d:%02d:%02d.%06ld", /*1900 + timenow->tm_year, 1 + timenow->tm_mon, timenow->tm_mday, */timenow->tm_hour, timenow->tm_min, timenow->tm_sec, tv.tv_usec); 
-    if (msg != NULL) {
-        printf(" - %s\n", msg);
-    } else {
-        printf("\n");
-    }
-    if (elapsed > 0) {
-        printf("elapsed:%06ld\n", elapsed);
-    }
-}
+
 
 const char *cl_error_to_str(cl_int e)
 {
@@ -183,7 +129,10 @@ const char *cl_error_to_str(cl_int e)
     case CL_INVALID_GLOBAL_WORK_SIZE: return "invalid global work size";
 #endif
 
-    default: return "invalid/unknown error code";
+    default: 
+    char msg[128] = "\0";
+    sprintf(msg, "invalid/unknown error code:%d", e);
+    return msg;
   }
 }
 
@@ -253,43 +202,7 @@ cl_int FSLCL_LoadKernelSource(char *filename, fsl_kernel_src *kernel)
     return FSLCL_SUCCESS; 
 } 
 
-int read_image(char *filename, int width, int height, unsigned short *buffer)
-{
-    debug("enter read image");
-    int ret = -1;
-    FILE *file = NULL;
-    if (filename != NULL && buffer != NULL) {
-        file = fopen(filename, "rb");
-        assert_and_return(file != NULL, -1);
-        int count = fread(buffer, width * height * sizeof(unsigned short), 1, file);
-        if (count != 1) {
-            printf("read failed!\n");
-        } else {
-            ret = 0;
-        }
-        fclose(file);
-    }
-    debug("read done");
-    
-    return ret;
-}
 
-int save_image(unsigned short *buffer, int width, int height, char *image_path)
-{
-    debug("enter save image");
-    int ret = 0;
-    FILE *file = NULL;
-    file = fopen(image_path, "wb");
-    assert_and_return(file != NULL, -1);
-    int count = fwrite(buffer, width * height * sizeof(unsigned short), 1, file);
-    if (count != 1) {
-        printf("write image failed\n");
-    }
-    fclose(file);
-    debug("save done");
-    return ret;
-    
-}
         
 int main(int argc, char **argv) 
 {
@@ -308,27 +221,28 @@ int main(int argc, char **argv)
     cl_kernel kernel; 
 
     int dimension = 2;
-    size_t global[2] = {buffer_width, buffer_height};
-    //size_t local[2] = {4, 16};
-    int size_2d = buffer_width * buffer_height * sizeof(unsigned short);//suze of buffer
+    size_t global_work_size[2] = {buffer_width, buffer_height};
+    //size_t local_work_size[2] = {8, 16}; //work_group 8*16, width=8, height=16
+    size_t local_work_size[2] = {16, 16}; //groupnum x = 3072/16 = 192, groupnum-y = 3072/16 = 384
+    //size_t local_work_size[2] = {128, 128};//error, max 256 = 16 * 16
+    //size_t local_work_size[2] = {16, 8};
+    int size_2d = buffer_width * buffer_height * sizeof(unsigned short);//size of buffer
     cl_int ret;
     cl_int platforms;
     int i, j;
         
     debug("allocating...");
-    
     unsigned short * data = NULL;
     unsigned short * out = NULL;
     data = (unsigned short *)malloc(buffer_width * buffer_height * sizeof(unsigned short));
     assert_and_return(data != NULL, -1);
     memset(data, 0, buffer_width * buffer_height * sizeof(unsigned short));
-    //init_buf(data, size_2d);
     out = (unsigned short *)malloc(buffer_width * buffer_height * sizeof(unsigned short));
     assert_and_return(out != NULL, -1);
     memset(out, 0, buffer_width * buffer_height * sizeof(unsigned short));
-    //init_buf(out, size_2d);
     debug("allocate done");
     
+    debug("Read Image");
     ret = read_image("./input.raw", buffer_width, buffer_height, data);
     assert_and_return(ret == 0, -1);
     
@@ -340,7 +254,8 @@ int main(int argc, char **argv)
     printf("Platform Num: %d\n", platforms);
     assert_and_return(ret == CL_SUCCESS, -2);
     
-    cl_int platform_index = 1;
+    //cl_int platform_index = 1; //Platform CPU
+    cl_int platform_index = 0;   //Platform GPU
     char buf[MAX_NAME_LEN] = "\0";
     CALL_CL_GUARDED(clGetPlatformInfo, (platform_id[platform_index], CL_PLATFORM_VENDOR, sizeof(buf), buf, NULL));
     printf("Platform Name:%s\n", buf);
@@ -351,12 +266,30 @@ int main(int argc, char **argv)
     printf("Device Num: %d\n", devices);
     assert_and_return(ret == CL_SUCCESS, -2);
     
+    //#if 0
     cl_int device_index = 0;
     memset(buf, 0, MAX_NAME_LEN);
     CALL_CL_GUARDED(clGetDeviceInfo, (device_id[device_index], CL_DEVICE_NAME, sizeof(buf), buf, NULL));
     printf("Device Name:%s\n", buf);
-
+    
+    cl_int count;
+    CALL_CL_GUARDED(clGetDeviceInfo, (device_id[device_index], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_int), &count, NULL));
+    printf("Device Max Compute Units:%d\n", count);
+    
+    size_t work_item_size[3] = {0};
+    CALL_CL_GUARDED(clGetDeviceInfo, (device_id[device_index], CL_DEVICE_MAX_WORK_ITEM_SIZES, sizeof(work_item_size), &work_item_size, NULL));
+    printf("Device Max Work Item Size:%d,%d,%d\n", work_item_size[0], work_item_size[1], work_item_size[2]);
+    
+    size_t group_size;
+    CALL_CL_GUARDED(clGetDeviceInfo, (device_id[device_index], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &group_size, NULL));
+    printf("Device Max Work Group Size:%d\n", group_size);
+    //#endif
+    
     debug("3. Create Context");
+    /*Creates an OpenCL context. An OpenCL context is created with one or more devices. 
+      Contexts are used by the OpenCL runtime for managing objects such as command-queues, memory, 
+      program and kernel objects and for executing kernels on one or more devices specified in the context.
+    */
     cl_context_properties properties[] = {CL_CONTEXT_PLATFORM,  (cl_context_properties)platform_id[platform_index], 0};
     context = clCreateContext(properties, 2, device_id, NULL, NULL, &ret);
     assert_and_return(ret == CL_SUCCESS, -2);
@@ -365,9 +298,9 @@ int main(int argc, char **argv)
     cq = clCreateCommandQueue(context, device_id[device_index], 0, &ret);
     assert_and_return(ret == CL_SUCCESS, -2);
     
-    debug("5. Load Kernel Source");
+    debug("5. Load Source");
     fsl_kernel_src app_kernel;
-    ret = FSLCL_LoadKernelSource ((char *)"kernel.cl", &app_kernel);
+    ret = FSLCL_LoadKernelSource((char *)"kernel.cl", &app_kernel);
     assert_and_return(ret == CL_SUCCESS, -2);
     
     debug("6. Create Program");
@@ -377,7 +310,28 @@ int main(int argc, char **argv)
 
     debug("7. Build Program");
     //and compile it (after this we could extract the compiled version) 
-    ret = clBuildProgram(program, 2, device_id, NULL, NULL, NULL);
+    /*
+    cl_int clBuildProgram(cl_program program,
+                          // the number of devices listed in device_list
+                          cl_uint num_devices, 
+                          // a pointer to a list of devices associated with program. If device_list is a NULL value, the program
+                          // is built for all devices associated with program for which a source or binary has been loaded. If device_list
+                          // is a non-NULL value, the program executable is built for devices specified in this list for which a source or binary has been loaded.
+                          const cl_device_id *device_list, 
+                          // a pointer to a null-terminated string of characters that describes the build options to be used for building the program executable.
+                          const char *options,
+                          // a function pointer to a notification routine. The notification routine is a callback function that an application can register and 
+                          // which will be called when the program executable has been built (successfully or unsuccessfully). If pfn_notify is not NULL, 
+                          // clBuildProgram does not need to wait for the build to complete and can return immediately once the build operation can begin. 
+                          // The build operation can begin if the context, program whose sources are being compiled and linked, 
+                          // list of devices and build options specified are all valid and appropriate host and device resources needed to perform the build are available. 
+                          // If pfn_notify is NULL, clBuildProgram does not return until the build has completed. This callback function may be called asynchronously 
+                          // by the OpenCL implementation. It is the applications responsibility to ensure that the callback function is thread-safe.
+                          void (CL_CALLBACK *pfn_notify)(cl_program program, void *user_data),
+                          // passed as an argument when pfn_notify is called. user_data can be NULL.
+                          void *user_data)
+    */
+    ret = clBuildProgram(program, /*2*/0, /*device_id*/NULL, NULL, NULL, NULL);
     if (ret < 0) {
         printf ("Failed, Return: %d\n", ret);
         clGetProgramBuildInfo(program, &device_id[device_index], CL_PROGRAM_BUILD_LOG, app_kernel.size, app_kernel.src, NULL);
@@ -386,6 +340,11 @@ int main(int argc, char **argv)
     assert_and_return(ret == CL_SUCCESS, -2);
     
     debug("8. Create Kernel");
+    /*
+    cl_kernel clCreateKernel(cl_program program,  // a program object with a successfully built executable.
+                         const char *kernel_name, // a function name in the program declared with the __kernel qualifier.
+                         cl_int *errcode_ret)
+    */                         
     //get a handle and map parameters for the kernel 
     kernel = clCreateKernel(program, "helloworld", &ret); 
     assert_and_return(ret == CL_SUCCESS, -2);
@@ -397,10 +356,10 @@ int main(int argc, char **argv)
     assert_and_return(ret == CL_SUCCESS, -2);
     
     debug("10. Set Args");
-    clSetKernelArg (kernel, 0, sizeof(cl_mem), &buffer_input); 
-    clSetKernelArg (kernel, 1, sizeof(cl_mem), &buffer_output); 
-    clSetKernelArg (kernel, 2, sizeof(int), &buffer_width); 
-    clSetKernelArg (kernel, 3, sizeof(int), &buffer_height); 
+    clSetKernelArg(kernel, 0, sizeof(cl_mem), &buffer_input); 
+    clSetKernelArg(kernel, 1, sizeof(cl_mem), &buffer_output); 
+    clSetKernelArg(kernel, 2, sizeof(int), &buffer_width); 
+    clSetKernelArg(kernel, 3, sizeof(int), &buffer_height); 
     
     #if 0
     debug("CPU Computing");
@@ -420,7 +379,7 @@ int main(int argc, char **argv)
     
     //#if 0
     debug("12. GPU Computing");
-    ret = clEnqueueNDRangeKernel(cq, kernel, dimension, NULL, &global, NULL/*&local*/, 0, NULL, NULL);
+    ret = clEnqueueNDRangeKernel(cq, kernel, dimension, NULL, &global_work_size, /*NULL*/&local_work_size, 0, NULL, NULL);
     assert_and_return(ret == CL_SUCCESS, -2);
     debug("Done");
     //#endif
@@ -431,28 +390,32 @@ int main(int argc, char **argv)
     assert_and_return(ret == CL_SUCCESS, -2);
     #endif
     
+    debug("13. Map Output Buffer");
     unsigned short *device_buffer = (unsigned short *)clEnqueueMapBuffer(cq, buffer_output, CL_TRUE, CL_MAP_READ, 0, size_2d, 0, NULL, NULL, &ret);
     assert_and_return(ret == CL_SUCCESS, -2);
     assert_and_return(device_buffer != NULL, -2);
-    debug("Map Buffer done");
     
+    debug("Save Image");
     ret = save_image(device_buffer, buffer_width, buffer_height, "./out.raw");
     if (ret != 0) {
         debug("write image failed");
     }
-
+    clEnqueueUnmapMemObject(cq, buffer_output, device_buffer, 0, NULL, NULL);
+    
     debug("14. Release Objects");
-    clFlush( cq);
+    clFlush(cq);
     clFinish(cq);
 
     clReleaseMemObject(buffer_input);
     clReleaseMemObject(buffer_output);
-
+    
     clReleaseContext(context);
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseCommandQueue(cq);
 
+    free(data);
+    free(out);
     debug("exit main");
     return 0; 
 } 

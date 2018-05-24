@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+exit 0;
+/etc/sg_dma_autoload.sh

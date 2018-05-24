@@ -116,53 +116,45 @@ int main(int argc, char ** argv)
 	char * ptrChar = NULL;
 	std::cout << "sizeof(char *) = " << sizeof(char *) << std::endl;
 	std::cout << "sizeof(ptrChar) = " << sizeof(ptrChar) << std::endl;
-	
-        std::cout <<"*************************************************"<<std::endl;
+    std::cout <<"*************************************************"<<std::endl;
 
 	char * ptrszChar[10] = {};
 	std::cout << "sizeof(ptrszChar) = " << sizeof(ptrszChar) << std::endl;
-
-        std::cout <<"*************************************************"<<std::endl;
+    std::cout <<"*************************************************"<<std::endl;
 
 	char (*ptrC)[10] = NULL;
 	std::cout << "sizeof(ptrC) = " << sizeof(ptrC) << std::endl;
-
-        std::cout <<"*************************************************"<<std::endl;
+    std::cout <<"*************************************************"<<std::endl;
 
 	char szChar[10] = {};
 	std::cout << "sizeof(szChar) = " << sizeof(szChar) << std::endl;
-
-        std::cout <<"**************************************************"<<std::endl;
+    std::cout <<"**************************************************"<<std::endl;
 	
 	int szInt[10] = {};
 	std::cout << "sizeof(szInt) = " << sizeof(szInt) << std::endl;
+    std::cout <<"************************************************"<<std::endl;
 
-        std::cout <<"************************************************"<<std::endl;
-	
 	std::cout << "sizeof(int[10]) = " << sizeof(int[10]) << std::endl;
-
-        std::cout <<"************************************************"<<std::endl;
+    std::cout <<"************************************************"<<std::endl;
 
 	std::cout << "sizeof(char) = " << sizeof(char) << std::endl;
 	std::cout << "sizeof(short) = " << sizeof(short) << std::endl;
 	std::cout << "sizeof(int) = " << sizeof(int) << std::endl;
 	std::cout << "sizeof(long) = " << sizeof(long) << std::endl;
-
 	std::cout << "sizeof(float) = " << sizeof(float) << std::endl;
 	std::cout << "sizeof(double) = " << sizeof(double) << std::endl;
-
-        std::cout <<"***********************************************"<<std::endl;
+    std::cout <<"***********************************************"<<std::endl;
 
 	std::cout << "sizeof(Base) = " << sizeof(Base) << std::endl;
 	std::cout << "sizeof(Derive) = " << sizeof(Derive) << std::endl;
+    std::cout <<"***********************************************"<<std::endl;
 
-        std::cout <<"***********************************************"<<std::endl;
 	std::cout << "sizeof(CNULL) = " << sizeof(CNULL) << std::endl;
 	std::cout << "sizeof(A) = " << sizeof(A) << std::endl;
 	std::cout << "sizeof(B) = " << sizeof(B) << std::endl;
 	std::cout << "sizeof(C) = " << sizeof(C) << std::endl;
+    std::cout <<"***********************************************"<<std::endl;
 
-        std::cout <<"***********************************************"<<std::endl;
 	std::cout << "sizeof(Test) = " << sizeof(Test) << std::endl;
 	std::cout << "sizeof(Test2) = " << sizeof(Test2) << std::endl;
 }

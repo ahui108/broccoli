@@ -1,0 +1,2 @@
+0x4b2590d2	sub_test	/home/eric/test/broccoli/modules/hello/hello	EXPORT_SYMBOL
+0xef23ee30	add_test	/home/eric/test/broccoli/modules/hello/hello	EXPORT_SYMBOL

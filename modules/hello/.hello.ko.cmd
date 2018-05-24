@@ -1,0 +1,1 @@
+cmd_/home/eric/test/broccoli/modules/hello/hello.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /home/eric/test/broccoli/modules/hello/hello.ko /home/eric/test/broccoli/modules/hello/hello.o /home/eric/test/broccoli/modules/hello/hello.mod.o
