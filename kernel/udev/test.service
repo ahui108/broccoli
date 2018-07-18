@@ -1,0 +1,10 @@
+[Unit]
+Description="for testing"
+
+[Service]
+Type=oneshot
+RemainAfterExit=no
+ExecStart=/home/linux/test.s
+
+[Install]
+WantedBy=multi-user.target
