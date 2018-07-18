@@ -1,4 +1,6 @@
 #include <iostream>
+#include <stdint.h>
+#include <stddef.h>
 
 class Base
 {
@@ -138,11 +140,17 @@ int main(int argc, char ** argv)
     std::cout <<"************************************************"<<std::endl;
 
 	std::cout << "sizeof(char) = " << sizeof(char) << std::endl;
+	std::cout << "sizeof(wchar_t) = " << sizeof(wchar_t) << std::endl;
 	std::cout << "sizeof(short) = " << sizeof(short) << std::endl;
+	std::cout << "sizeof(size_t) = " << sizeof(size_t) << std::endl;
 	std::cout << "sizeof(int) = " << sizeof(int) << std::endl;
-	std::cout << "sizeof(long) = " << sizeof(long) << std::endl;
+	std::cout << "sizeof(long int) = " << sizeof(long int) << std::endl;
+	std::cout << "sizeof(long long int) = " << sizeof(long long int) << std::endl;
 	std::cout << "sizeof(float) = " << sizeof(float) << std::endl;
 	std::cout << "sizeof(double) = " << sizeof(double) << std::endl;
+	std::cout << "sizeof(long double) = " << sizeof(long double) << std::endl;
+	std::cout << "sizeof(intmax_t) = " << sizeof(intmax_t) << std::endl;
+	std::cout << "sizeof(ptrdiff_t) = " << sizeof(ptrdiff_t) << std::endl;
     std::cout <<"***********************************************"<<std::endl;
 
 	std::cout << "sizeof(Base) = " << sizeof(Base) << std::endl;
