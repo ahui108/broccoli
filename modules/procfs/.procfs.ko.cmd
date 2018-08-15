@@ -1,0 +1,1 @@
+cmd_/home/eric/dev/broccoli/modules/procfs/procfs.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/eric/dev/broccoli/modules/procfs/procfs.ko /home/eric/dev/broccoli/modules/procfs/procfs.o /home/eric/dev/broccoli/modules/procfs/procfs.mod.o
