@@ -152,6 +152,10 @@ int32 tiff_templ::write_ifd() {
     uint16 de_count = m_demap.size();
     fwrite(&de_count, 1, 2, m_file);
     for (std::map<uint16, TDE>::iterator it = m_demap.begin(); it != m_demap.end(); it++) {
+        if (it->second.tagid == TIFFTAG_EXTERN_EXPOSURELINE) {
+            long pos = ftell(m_file);
+            printf("Expline offset:0x%02X, cur value:0x%02X\n", (uint32)(pos + 2 + 2 + 4), it->second.valueOffset);
+        }
         fwrite(&(it->second), 1, sizeof(TDE), m_file);
     }
     uint32 next_ifd_offset = 0x00;
@@ -216,7 +220,7 @@ int32 main(int32 argc, char** argv) {
     templ.add_de(TIFFTAG_STRIPBYTECOUNTS, (long)(width * height * depth));
     templ.add_de(TIFFTAG_EXTERN_EXPOSURELINE, (long)(0xFFFFFFFF));
     templ.add_de(TIFFTAG_MAKER, const_cast<char*>("iRay"), 4);
-    //templ.set_de(TIFFTAG_EXTERN_EXPOSURELINE, (long)expline);
+    templ.set_de(TIFFTAG_EXTERN_EXPOSURELINE, (long)expline);
 	templ.write_ifd();
     
     int32 len = width * height * depth;
