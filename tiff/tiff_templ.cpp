@@ -30,8 +30,6 @@ struct TDE
     uint32 valueOffset;
 };
 
-#define BUFFER_LEN_DEFUALT 2048
-#define BUFFER_INCREMENT_DEFAULT 2048
 class tiff_templ
 {
   public:
@@ -48,16 +46,19 @@ class tiff_templ
     
   private:
     int32 m_ifd_offset;
+    TIFH m_ifh;
     std::map<uint16, TDE> m_demap;
     FILE* m_file;
 };
 
 tiff_templ::tiff_templ() : m_ifd_offset(0) {
     m_file = fopen("./templ.tif", "wb");
-    TIFH header = {0x4949, 0x002a, 0x00};
+    m_ifh.byteOrder = 0x4949;
+    m_ifh.version = 0x002a;
+    m_ifh.offsetToFirstIFD = 0x00;
     fseek(m_file, m_ifd_offset, SEEK_SET);
-    fwrite(&header, 1, sizeof(TIFH), m_file);
-    m_ifd_offset += sizeof(header);
+    fwrite(&m_ifh, 1, sizeof(TIFH), m_file);
+    m_ifd_offset += sizeof(m_ifh);
 }
 
 tiff_templ::~tiff_templ() {
@@ -144,8 +145,9 @@ int32 tiff_templ::set_de(uint16 tagid, char* val, int32 len) {
 }
 
 int32 tiff_templ::write_ifd() {
-    fseek(m_file, 4, SEEK_SET);
-    fwrite(&m_ifd_offset, 1, 4, m_file);
+    fseek(m_file, 0, SEEK_SET);
+    m_ifh.offsetToFirstIFD = m_ifd_offset;
+    fwrite(&m_ifh, 1, sizeof(TIFH), m_file);
     fseek(m_file, m_ifd_offset, SEEK_SET);
     uint16 de_count = m_demap.size();
     fwrite(&de_count, 1, 2, m_file);
@@ -157,9 +159,11 @@ int32 tiff_templ::write_ifd() {
 }
 
 int32 tiff_templ::write_raw_data(uint8* pData, int32 len) {
-    long imgoffset = m_ifd_offset + sizeof(TDE) * m_demap.size() + 2 + 4;
-    set_de(TIFFTAG_STRIPOFFSETS, imgoffset);
-    fseek(m_file, imgoffset, SEEK_SET);
+    const int DECountLen = 2;
+    const int NextIFDOffsetLen = 4;
+    long img_offset = m_ifd_offset + sizeof(TDE) * m_demap.size() + DECountLen + NextIFDOffsetLen;
+    set_de(TIFFTAG_STRIPOFFSETS, img_offset);
+    fseek(m_file, img_offset, SEEK_SET);
     fwrite(pData, 1, len, m_file);
 }
 
@@ -184,19 +188,19 @@ int32 main(int32 argc, char** argv) {
 	{TIFFTAG_BITSPERSAMPLE, 	TIFF_SHORT, 	1, depth * 8}, // TAG_BITSPERSAMPLE 颜色深度，1=单色，2=16色，8=256色，个数>2=真彩
 	{TIFFTAG_COMPRESSION, 		TIFF_SHORT, 	1, 1}, // no Compression
 	{TIFFTAG_PHOTOMETRIC, 		TIFF_SHORT, 	1, 1}, // 0:WhiteIsZero, 1:BlackIsZero
-	//{TIFFTAG_IMAGEDESCRIPTION,TIFF_ASCII, IMAGE_DESP_LEN, 0}, 
-	//{TIFFTAG_MAKER, 			TIFF_ASCII, 	MAKER_LEN, 		0}, 
-	//{TIFFTAG_MODEL, 			TIFF_ASCII,	 	MODEL_LEN, 		0}, 
+	{TIFFTAG_IMAGEDESCRIPTION,TIFF_ASCII, IMAGE_DESP_LEN, 0}, 
+	{TIFFTAG_MAKER, 			TIFF_ASCII, 	MAKER_LEN, 		0}, 
+	{TIFFTAG_MODEL, 			TIFF_ASCII,	 	MODEL_LEN, 		0}, 
 	{TIFFTAG_STRIPOFFSETS, 		TIFF_LONG, 		1, 0}, //TAG_STRIPOFFSET 图像起始地址
 	{TIFFTAG_ORIENTATION, 		TIFF_SHORT, 	1, 1}, //default:top left 
 	{TIFFTAG_SAMPLESPERPIXEL, 	TIFF_SHORT, 	1, 1}, //TAG_SAMPLESPERPIXEL, for REG, number is 3
-	//{TIFFTAG_ROWSPERSTRIP, 	TIFF_LONG, 		1, 0},
+	{TIFFTAG_ROWSPERSTRIP, 	TIFF_LONG, 		1, 0},
 	{TIFFTAG_STRIPBYTECOUNTS, 	TIFF_LONG, 		1, width * height * depth}, 
-	//{TIFFTAG_XRESOLUTION, 	TIFF_RATIONAL, 	1, 0}, //分数
-	//{TIFFTAG_YRESOLUTION, 	TIFF_RATIONAL, 	1, 0}, //分数
-	//{TIFFTAG_RESOLUTIONUNIT, 	TIFF_SHORT, 	1, 1}, 
-	//{TIFFTAG_SOFTWARE, 		TIFF_ASCII, 	SOFTWARE_INFO_LEN, 0}, 
-	//{TIFFTAG_DATETIME, 		TIFF_ASCII, 	DATETIME_INFO_LEN, 0}, 
+	{TIFFTAG_XRESOLUTION, 	TIFF_RATIONAL, 	1, 0}, //分数
+	{TIFFTAG_YRESOLUTION, 	TIFF_RATIONAL, 	1, 0}, //分数
+	{TIFFTAG_RESOLUTIONUNIT, 	TIFF_SHORT, 	1, 1}, 
+	{TIFFTAG_SOFTWARE, 		TIFF_ASCII, 	SOFTWARE_INFO_LEN, 0}, 
+	{TIFFTAG_DATETIME, 		TIFF_ASCII, 	DATETIME_INFO_LEN, 0}, 
     {TIFFTAG_EXTERN_EXPOSURELINE, TIFF_LONG, 	1, 0},
     };*/
     
@@ -212,14 +216,15 @@ int32 main(int32 argc, char** argv) {
     templ.add_de(TIFFTAG_STRIPBYTECOUNTS, (long)(width * height * depth));
     templ.add_de(TIFFTAG_EXTERN_EXPOSURELINE, (long)(0xFFFFFFFF));
     templ.add_de(TIFFTAG_MAKER, const_cast<char*>("iRay"), 4);
-	templ.set_de(TIFFTAG_STRIPOFFSETS, (long)0x00);
-    templ.set_de(TIFFTAG_EXTERN_EXPOSURELINE, (long)expline);
+    //templ.set_de(TIFFTAG_EXTERN_EXPOSURELINE, (long)expline);
 	templ.write_ifd();
+    
     int32 len = width * height * depth;
     uint8* pdata = new uint8[len];
     memset(pdata, 0xFF, len);
     templ.write_raw_data(pdata, len);
     delete []pdata;
+    
     printf("TIF template file saved to ./templ.tif\n");
     exit(0);
 }
